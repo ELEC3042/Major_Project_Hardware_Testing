@@ -27,18 +27,18 @@
 #define SPI_S3 0x10
 
 #define S4 3
-#define SRPD 4
-#define SRPW 5
+#define TC1 4
+#define TC2 5
 #define S5 6
-#define SZL 7
+#define TRAIN 7
 #define S6 8
 #define SPEAKER 9
 #define CHIPSELECT 10
 
 #define POT A0
-#define SRPR A1
-#define SRPY A2
-#define SRPG A3
+#define ESR A1
+#define ESY A2
+#define ESG A3
 
 volatile uint8_t i2c_address = 0x27;    // change to match your LCD screen
 LiquidCrystal_I2C lcd(i2c_address, 16, 2);
@@ -66,12 +66,12 @@ uint8_t spi_read(uint8_t reg) {
 // light the leds that are directly conencted.
 // s4, s5 and s6 each have RYG values for that bank
 void light_leds(uint8_t s4, uint8_t s5, uint8_t s6) {
-    digitalWrite(SRPD, (s4&0x4)?HIGH:LOW);
-    digitalWrite(SRPW, (s4&0x1)?HIGH:LOW);
-    digitalWrite(SZL,  (s5&0x4)?HIGH:LOW);
-    digitalWrite(SRPR, (s6&0x4)?HIGH:LOW);
-    digitalWrite(SRPY, (s6&0x2)?HIGH:LOW);
-    digitalWrite(SRPG, (s6&0x1)?HIGH:LOW);
+    digitalWrite(TC1, (s4&0x4)?HIGH:LOW);
+    digitalWrite(TC2, (s4&0x1)?HIGH:LOW);
+    digitalWrite(TRAIN,  (s5&0x4)?HIGH:LOW);
+    digitalWrite(ESR, (s6&0x4)?HIGH:LOW);
+    digitalWrite(ESY, (s6&0x2)?HIGH:LOW);
+    digitalWrite(ESG, (s6&0x1)?HIGH:LOW);
 }
 
 // light the leds connected through the SPI port expander
@@ -82,13 +82,13 @@ void spi_light_leds(uint8_t l0, uint8_t l1, uint8_t l2, uint8_t l3) {
 
 // cycle through the LEDs. For 2 seconds we light the green, then yellow, then read LEDs
 void test_leds() {
-  light_leds(0x01, 0x00, 0x01);
+  light_leds(0x00, 0x00, 0x01);
   spi_light_leds(0x01, 0x01, 0x01, 0x01);
   delay(2000);
   light_leds(0x00, 0x00, 0x02);
   spi_light_leds(0x02, 0x02, 0x02, 0x02);
   delay(2000);
-  light_leds(0x04, 0x04, 0x04);
+  light_leds(0x05, 0x04, 0x04);
   spi_light_leds(0x04, 0x04, 0x04, 0x04);
   delay(2000);
 }
@@ -117,7 +117,7 @@ void test_leds_and_buttons() {
       (digitalRead(S5)  ? 0x20:0) |
       (digitalRead(S6)  ? 0x40:0);
 
-      light_leds(digitalRead(S4)?0:7, digitalRead(S5)?0:7, digitalRead(S6)?0:7);
+      light_leds(digitalRead(S5)?0:7, digitalRead(S6)?0:7, digitalRead(S4)?0:7);
       spi_light_leds(
           (pvalA & SPI_S0)?0x00:0x07,
           (pvalA & SPI_S1)?0x00:0x07,
@@ -139,12 +139,12 @@ void test_leds_and_buttons() {
 
 void setup() {
   // setup LEDs connected to UNO
-  pinMode(SRPD, OUTPUT);
-  pinMode(SRPW, OUTPUT);
-  pinMode(SZL, OUTPUT);
-  pinMode(SRPR, OUTPUT);
-  pinMode(SRPY, OUTPUT);
-  pinMode(SRPG, OUTPUT);
+  pinMode(TC1, OUTPUT);
+  pinMode(TC2, OUTPUT);
+  pinMode(TRAIN, OUTPUT);
+  pinMode(ESR, OUTPUT);
+  pinMode(ESY, OUTPUT);
+  pinMode(ESG, OUTPUT);
   
   // setup buttons connected to UNO
   pinMode(S4, INPUT_PULLUP);
@@ -182,7 +182,7 @@ void loop() {
   // LEDs & Buttons
   lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print("23S1 ELEC3042");
+  lcd.print("24S1 ELEC3042");
   
   lcd.setCursor(0, 1);
   lcd.print("Cycle LEDs");
